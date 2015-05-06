@@ -1,0 +1,352 @@
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+//import java.util.Timer;
+
+
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+
+public class Driver extends JPanel{
+
+private BufferedImage image;
+private Timer t;
+private SlimeBall p1;
+private SlimeBall p2;
+private Ball ball;
+private Graphics g;
+private int jumpHeight;
+private boolean isMovingRightP2 = false;
+private boolean isMovingLeftP2 = false;
+private boolean isJumpingP2 = false;
+private boolean isFallingP2 = false;
+private boolean isMovingLeftP1 = false;
+private boolean isMovingRightP1 = false;
+private boolean isJumpingP1 = false;
+private boolean isFallingP1 = false;
+private boolean isFallingBall = false;
+private boolean goingUp = false;
+private boolean goingLeft = false;
+private boolean goingRight = false;
+private boolean p1Turn = true;
+
+private static final int SCREEN_SIZE = 1000;
+private static final int GROUND_LEVEL = 600;
+
+
+	public Driver(){
+		image = new BufferedImage(SCREEN_SIZE, SCREEN_SIZE, BufferedImage.TYPE_INT_RGB);
+		g = image.getGraphics();
+	
+		//Set up the background for game
+		g.setColor(new Color(32, 208, 242));
+		g.fillRect(0, 0, SCREEN_SIZE, SCREEN_SIZE);
+		g.setColor(new Color(33,179,11));
+		g.fillRect(0, 700, SCREEN_SIZE, 300);
+	
+		//Put the fence
+		g.setColor(Color.black);
+		g.fillRect((SCREEN_SIZE/2)-15, 600, 15, 100);
+		
+		//draw both Slimeballs
+		p1 = new SlimeBall(175, 600, Color.red);
+		p2 = new SlimeBall(675, 600, Color.blue);
+		jumpHeight = p2.getY()-50;
+		p1.draw(g);
+		p2.draw(g);
+	
+		// Add the ball 235
+		ball = new Ball(235, 350, 40, Color.yellow);
+		ball.draw(g);
+		isFallingBall = true;
+		p1Turn = false;
+		
+		t = new Timer(10, new Listener());
+		t.start();
+		addKeyListener(new Key());
+		setFocusable(true);
+	}
+
+	private class Key extends KeyAdapter
+	   {
+	      // detects if any button was pressed
+		  public void keyPressed(KeyEvent e)
+	      {
+			 // Check for player 2's movements
+	         if(e.getKeyCode() == KeyEvent.VK_RIGHT)
+	        	 isMovingRightP2 = true;
+	         if(e.getKeyCode() == KeyEvent.VK_LEFT)
+	        	 isMovingLeftP2 = true;
+	         if(e.getKeyCode() == KeyEvent.VK_UP && p2.getY() == GROUND_LEVEL)
+	        	 isJumpingP2 = true;
+	         
+	         // Check for player 1's movements
+	         if(e.getKeyCode() == KeyEvent.VK_A)
+	        	 isMovingLeftP1 = true;
+	         if(e.getKeyCode() == KeyEvent.VK_D)
+	        	 isMovingRightP1 = true;
+	         if(e.getKeyCode() == KeyEvent.VK_W && p1.getY() == GROUND_LEVEL)
+	        	 isJumpingP1 = true;
+	      }
+		  // detects if any button was released
+	      public void keyReleased(KeyEvent e)
+	      {
+	    	  int key = e.getKeyCode();
+	    	  
+	    	  // check for player 2's release of buttons
+	    	  if(key == KeyEvent.VK_RIGHT)
+	    		  isMovingRightP2 = false;
+	    	  if(key == KeyEvent.VK_LEFT)
+	    		  isMovingLeftP2 = false;
+	    	  
+	    	  // check for player 1's release of buttons
+	    	  if(key == KeyEvent.VK_A)
+	    		  isMovingLeftP1 = false;
+	    	  if(key == KeyEvent.VK_D)
+	    		  isMovingRightP1 = false;
+	      }
+	   }
+	
+	private class Listener implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			//background for the game
+			g.setColor(new Color(32, 208, 242));
+			g.fillRect(0, 0, SCREEN_SIZE, SCREEN_SIZE);
+			g.setColor(new Color(33,179,11));
+			g.fillRect(0, 700, SCREEN_SIZE, 300);
+		
+			//The fence
+			g.setColor(Color.black);
+			g.fillRect((SCREEN_SIZE/2)-15, 600, 15, 100);
+			
+			// Check for movement for player 1
+			if(isMovingRightP1 && p1.getX() < SCREEN_SIZE/2 - 175)
+				p1.moveRight(20);
+			if(isMovingLeftP1 && p1.getX() > 0)
+				p1.moveLeft(20);
+			// Check for player 1's jumps
+			if(isJumpingP1)
+			{
+				p1.jump(5);
+				if(p1.getY() <= jumpHeight)
+					{
+						isJumpingP1 = false;
+						isFallingP1 = true;
+					}
+			}
+			if((isFallingP1 && p1.getY() < GROUND_LEVEL))
+				{
+					p1.fall(5);
+					if(p1.getY() == GROUND_LEVEL)
+						isFallingP1 = false;
+				}
+			
+			
+			// Check for movement for player 2
+			if(isMovingRightP2 && p2.getX() < SCREEN_SIZE - 150)
+				p2.moveRight(20);
+			if(isMovingLeftP2 && p2.getX() > SCREEN_SIZE/2 + 14)
+				p2.moveLeft(20);
+			// Check for player 2's jumps
+			if(isJumpingP2)
+			{
+				p2.jump(5);
+				if(p2.getY() <= jumpHeight)
+					{
+						isJumpingP2 = false;
+						isFallingP2 = true;
+					}
+			}
+			if((isFallingP2 && p2.getY() < GROUND_LEVEL))
+				{
+					p2.fall(5);
+					if(p2.getY() == GROUND_LEVEL)
+						isFallingP2 = false;
+				}
+			
+			//Check if the ball is falling
+			if(isFallingBall && ball.getY() < (GROUND_LEVEL + 100) -ball.getDia())
+			{
+				ball.fall();
+				ball.setGravity(ball.getGravity()+1);
+			}
+			
+			//Check if the ball hits the ground
+			if(isFallingBall && ball.getY() >= (GROUND_LEVEL+100) - ball.getDia())
+			{
+				goingLeft = false;
+				goingRight = false;
+				ball.setGravity(1);
+				ball.setY(350);
+				if(p1Turn)
+				{
+					ball.setX(235);
+					p1Turn = false;
+				}
+				else
+				{
+					ball.setX(735);
+					p1Turn = true;
+				}
+			}
+			//Check if the ball hit the top of fence
+			if((ball.getY() >= (600-ball.getDia()) && ball.getY() < 610 && ball.getX() >= 476 && ball.getX() <=495))
+			{
+				if(isFallingBall)
+				{
+					isFallingBall = false;
+					ball.setGravity(1);
+					goingUp = true;
+				}
+			}
+			
+			//Check if the ball hits the left side of the fence
+			if((ball.getY() >= 600-ball.getDia() && (ball.getX() >= 452 && ball.getX() <= 476)))
+			{
+				goingRight = false;
+				ball.setSpeed(25.0);
+				goingLeft = true;
+			}
+			//Check if the ball hits the right side of the fence
+			if(ball.getY() >= 600-ball.getDia() && (ball.getX() >= 495 && ball.getX() <= 528))
+			{
+				goingLeft = false;
+				ball.setSpeed(25.0);
+				goingRight = true;
+			}
+			//Check if ball is bouncing on the middle of P1
+			if(isFallingBall && 
+			(ball.getX() >= p1.getX()+45 && ball.getX() <= p1.getX() + 75 && ball.getY() >= p1.getY()-ball.getDia()))   
+			{
+				isFallingBall = false;
+				ball.setGravity(1);
+				goingUp = true;
+			}
+			
+			// Check if ball hits left side of P1
+			if(isFallingBall && (ball.getX() > p1.getX()-33 && ball.getX() < p1.getX()+45)
+					&& ball.getY() >= (p1.getY()-15))
+			{
+				isFallingBall = false;
+				goingRight = false;
+				ball.setGravity(1);
+				ball.setSpeed(25.0);
+				goingUp = true;
+				goingLeft = true;
+			}
+			
+			// Check if ball hits right side of p1
+			if(isFallingBall && (ball.getX() > p1.getX()+75 && ball.getX()< p1.getX()+164) 
+					&& ball.getY() >= (p1.getY()-15))
+			{
+				isFallingBall = false;
+				goingLeft = false;
+				ball.setGravity(1);
+				ball.setSpeed(25.0);
+				goingUp = true;
+				goingRight = true;
+			}
+			
+			//Check if ball is bouncing on the middle of P2
+			if(isFallingBall && 
+			(ball.getX() >= p2.getX()+50 && ball.getX() <= p2.getX() + 70 && ball.getY() >= p2.getY()-ball.getDia()))   
+			{
+				isFallingBall = false;
+				ball.setGravity(1);
+				goingUp = true;
+			}
+			
+			// Check if ball hits left side of P2
+			if(isFallingBall && (ball.getX() > p2.getX()-33 && ball.getX() < p2.getX()+50)
+				&& ball.getY() >= (p2.getY()-15))
+			{
+				isFallingBall = false;
+				goingRight = false;
+				ball.setGravity(1);
+				ball.setSpeed(25.0);
+				goingUp = true;
+				goingLeft = true;
+			}
+			
+			// Check if the ball hits the right side of p2
+			if(isFallingBall && (ball.getX() > p2.getX() + 70 && ball.getX() < p2.getX()+164)
+					&& ball.getY() >= (p2.getY()-15))
+			{
+				isFallingBall = false;
+				goingLeft = false;
+				ball.setGravity(1);
+				ball.setSpeed(25.0);
+				goingUp = true;
+				goingRight = true;
+			}
+			
+			//The Ball's bounce
+			if(goingUp && ball.getMomentum() > 0)
+			{
+				ball.setY((int) (ball.getY()-ball.getMomentum()));
+				ball.setMomentum(ball.getMomentum()-.5);
+				if(ball.getMomentum() == 0)
+				{
+					goingUp = false;
+					ball.setMomentum(12.5);
+					isFallingBall = true;
+				}
+			}
+			
+			//The ball going left
+			if(ball.getSpeed() > 0 && goingLeft)
+			{
+				ball.moveLeft();
+				ball.setSpeed(ball.getSpeed()-.2);
+				if(ball.getX() <= 0)
+				{
+					goingLeft = false;
+					goingRight = true;
+				}
+			}
+			
+			//The ball going right
+			if(ball.getSpeed() > 0 && goingRight)
+			{
+				ball.moveRight();
+				ball.setSpeed(ball.getSpeed()-.2);
+				if(ball.getX() >= SCREEN_SIZE-35)
+				{
+					goingRight = false;
+					goingLeft = true;
+				}
+			}
+			//the slimeballs
+			p1.draw(g);
+			p2.draw(g);
+			ball.draw(g);
+			
+			repaint();
+   }
+}
+	//Graphics component
+	public void paintComponent (Graphics g)
+	{
+		g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
+	}
+	
+	//Main program
+	public static void main(String[] args) 
+	{
+		JFrame frame = new JFrame("Slime Ball");
+		frame.setSize(SCREEN_SIZE, SCREEN_SIZE);
+		frame.setLocation(200, 200);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setContentPane(new Driver());
+		frame.setVisible(true);
+	}
+}
