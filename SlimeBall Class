@@ -1,0 +1,67 @@
+import java.awt.*;
+public class SlimeBall {
+
+private int Xcor;
+private int Ycor;
+private Color color;
+
+	
+	//constructor
+	public SlimeBall(int x, int y, Color c)
+	{
+		Xcor = x;
+		Ycor = y;
+		color = c;
+	}
+	
+	public int getX()
+	{
+		return Xcor;
+	}
+	public int getY()
+	{
+		return Ycor;
+	}
+	public Color getColor()
+	{
+		return color;
+	}
+	//set x coordinate method
+	public void setXcor(int x)
+	{
+		Xcor = x;
+		
+	}
+	
+	//set y coordinate method
+	public void setYcor(int y)
+	{
+		Ycor = y;
+	}
+	
+	//move slimeball right method
+	public void moveRight(int amount)
+	{
+		setXcor(getX()+amount);
+	}
+	
+	public void moveLeft(int amount)
+	{
+		setXcor(Xcor-amount);
+	}
+	
+	public void jump(int amount)
+	{
+		setYcor(getY()-amount);
+	}
+	public void fall(int amount)
+	{
+		setYcor(getY()+amount);
+	}
+	//draw the slimeball
+	public void draw(Graphics myBuffer)
+	{
+		myBuffer.setColor(getColor());
+		myBuffer.fillArc(getX(), getY(), 150, 200, 0, 180);
+	}
+}
